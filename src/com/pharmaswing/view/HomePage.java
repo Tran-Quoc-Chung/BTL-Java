@@ -12,6 +12,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -33,6 +34,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
@@ -50,11 +53,34 @@ public class HomePage extends JFrame {
 	private JTextField txf_searchDrugs;
 	private JTextField txf_priceDrugs;
 	private String priceDrugs;
+	private int selectedId;
+	private int idDrugs;
+	private int spinValue;
+	private JComboBox cbx_pharma;
 
 	/**
 	 * Launch the application.
 	 */
 	PropertiesDesign propertiesDesign = new PropertiesDesign();
+
+	public class ComboItem {
+		private String name;
+		private String value;
+
+		public ComboItem(String name, String value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+
+		public String getValue() {
+			return value;
+		}
+	}
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -138,11 +164,6 @@ public class HomePage extends JFrame {
 		btnNewButton_3_1.setBounds(1114, 600, 113, 83);
 		contentPane.add(btnNewButton_3_1);
 
-		JButton btnNewButton_1_1 = new JButton("Hủy hàng");
-		btnNewButton_1_1.setFont(new Font("Tahoma", Font.BOLD, 20));
-		btnNewButton_1_1.setBounds(645, 10, 143, 58);
-		contentPane.add(btnNewButton_1_1);
-
 		JButton btnNewButton_1_1_1 = new JButton("Hủy giao dịch");
 		btnNewButton_1_1_1.setFont(new Font("Tahoma", Font.BOLD, 16));
 		btnNewButton_1_1_1.setBounds(798, 10, 143, 59);
@@ -208,7 +229,7 @@ public class HomePage extends JFrame {
 
 	public HomePage() {
 		declaredAllDesign();
-		JComboBox cbx_pharma = new JComboBox();
+		cbx_pharma = new JComboBox();
 		cbx_pharma.setBounds(10, 33, 177, 41);
 		contentPane.add(cbx_pharma);
 
@@ -227,74 +248,148 @@ public class HomePage extends JFrame {
 		table_drugList.setBounds(10, 146, 560, 427);
 		contentPane.add(table_drugList);
 
+		JButton btn_deleteDrugs = new JButton("Hủy hàng");
+		btn_deleteDrugs.setEnabled(false);
+		btn_deleteDrugs.setFont(new Font("Tahoma", Font.BOLD, 20));
+		btn_deleteDrugs.setBounds(645, 10, 143, 58);
+		contentPane.add(btn_deleteDrugs);
+
 		// combobox pharma
+
+		// cbx_pharma.addItem("");
+
 		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing?useSSL=false",
-					"root", "123456");
-			java.sql.Statement stmStatement = con.createStatement();
-			ResultSet resultPharma = stmStatement.executeQuery("SELECT * FROM pharma");
-
-			while (resultPharma.next()) {
-				cbx_pharma.addItem(resultPharma.getString("name"));
-
+			Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM pharma");
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				String name = rs.getString("name");
+				cbx_pharma.addItem(name);
 			}
-			resultPharma.close();
-			stmStatement.close();
-			con.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		cbx_pharma.addItemListener(new ItemListener() {
 
+		// Đoạn mã bắt sự kiện khi chọn cbx_pharma
+		cbx_pharma.addActionListener(new ActionListener() {
 			@Override
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
+			public void actionPerformed(ActionEvent e) {
+				cbx_drug.removeAllItems();
+
+//		      //  cbx_drug.addItem("");
+//
+				try {
+
+					Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root",
+							"123456");
 					String selectedPharma = cbx_pharma.getSelectedItem().toString();
-
-					cbx_drug.removeAllItems();
-
-					try {
-						Connection conn = DriverManager.getConnection(
-								"jdbc:mysql://127.0.0.1:3306/pharma_swing?useSSL=false", "root", "123456");
-						// String query = "SELECT name FROM drugs WHERE pharma = ?";
-						Statement stmt = conn.createStatement();
-
-						// stmt.setString(1, selectedQuocGia);
-						ResultSet rs = stmt.executeQuery(
-								"SELECT * FROM drugs WHERE id_pharma IN (SELECT id FROM pharma WHERE name='"
-										+ selectedPharma + "')");
+					if (!selectedPharma.isEmpty()) {
+						String query = "SELECT pharmalv2.name FROM pharmalv2 "
+								+ "INNER JOIN pharma ON pharmalv2.idpk = pharma.id " + "WHERE pharma.name = ?";
+						PreparedStatement ps = conn.prepareStatement(query);
+						ps.setString(1, selectedPharma);
+						ResultSet rs = ps.executeQuery();
 
 						while (rs.next()) {
+							String name = rs.getString("name");
+							cbx_drug.addItem(name);
+						}
+					}
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+				// ghi giá trị của tất cả trường drugs vào jtable
+				getData();
+			}
+		});
 
-							cbx_drug.addItem(rs.getString("name"));
+		cbx_drug.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String selectedDrug = cbx_drug.getSelectedItem().toString();
+
+				try {
+					if (!selectedDrug.isEmpty()) {
+						Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing",
+								"root", "123456");
+						String query = "SELECT code, name, price FROM drugslist "
+								+ "WHERE idpk = (SELECT id FROM pharmalv2 WHERE name = ?)";
+						PreparedStatement ps = conn.prepareStatement(query);
+						ps.setString(1, selectedDrug);
+						ResultSet rs = ps.executeQuery();
+
+						DefaultTableModel model = new DefaultTableModel();
+						model.addColumn("Code");
+						model.addColumn("Name");
+						model.addColumn("Price");
+
+						while (rs.next()) {
+							Object[] row = new Object[3];
+							row[0] = rs.getString("code");
+							row[1] = rs.getString("name");
+							row[2] = rs.getDouble("price");
+							model.addRow(row);
 						}
 
-						rs.close();
-						stmt.close();
-						conn.close();
-					} catch (SQLException ex) {
-						System.out.println(ex);
-					}
+						table_drugList.setModel(model);
 
+					}
+				} catch (SQLException ex) {
+					ex.printStackTrace();
 				}
 			}
 		});
+
+//		cbx_pharma.addItemListener(new ItemListener() {
+//
+//			@Override
+//			public void itemStateChanged(ItemEvent e) {
+//				if (e.getStateChange() == ItemEvent.SELECTED) {
+//
+//					String selectedPharma = cbx_pharma.getSelectedItem().toString();
+//
+//					cbx_drug.removeAllItems();
+//
+//					try {
+//						Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing",
+//								"root", "123456");
+//						// String query = "SELECT name FROM drugs WHERE pharma = ?";
+//						Statement stmt = conn.createStatement();
+//
+//						// stmt.setString(1, selectedQuocGia);
+//						ResultSet rs = stmt.executeQuery(
+//								"SELECT * FROM drugs WHERE id_pharma IN (SELECT id FROM pharma WHERE name='"
+//										+ selectedPharma + "')");
+//
+//						while (rs.next()) {
+//
+//							cbx_drug.addItem(rs.getString("name"));
+//						}
+//
+//						rs.close();
+//						stmt.close();
+//						conn.close();
+//					} catch (SQLException ex) {
+//						System.out.println(ex);
+//					}
+//
+//				}
+//			}
+//		});
 
 		// table list drugs
 
 		DefaultTableModel model = new DefaultTableModel(new Object[] { "ID", "Name", "Price" }, 1);
 
-		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing?useSSL=false",
-				"root", "123456");
+		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 				java.sql.Statement stmStatement = con.createStatement();
-				ResultSet resultSet = stmStatement.executeQuery("SELECT id, name, price FROM drugs");
+				ResultSet resultSet = stmStatement.executeQuery("SELECT code, name, price FROM drugslist");
 
 		) {
 			// lấy dữ liệu thành công
 			while (resultSet.next()) {
-				int id = resultSet.getInt("id");
+				int id = resultSet.getInt("code");
 				String name = resultSet.getString("name");
 				int price = resultSet.getInt("price");
 				model.addRow(new Object[] { id, name, price });
@@ -322,10 +417,10 @@ public class HomePage extends JFrame {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				int count = (int) spin_count.getValue();
+				spinValue = (int) spin_count.getValue();
 				String text = txf_priceDrugs.getText();
 				Integer price = Integer.parseInt(priceDrugs);
-				txf_priceDrugs.setText(String.valueOf(count * price));
+				txf_priceDrugs.setText(String.valueOf(spinValue * price));
 
 			}
 		});
@@ -354,9 +449,11 @@ public class HomePage extends JFrame {
 		table_drugList.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
+
 				int row = table_drugList.getSelectedRow();
 				String nameString = table_drugList.getValueAt(row, 1).toString();
 				String priceString = table_drugList.getValueAt(row, 2).toString();
+				idDrugs = (int) table_drugList.getValueAt(row, 0);
 				priceDrugs = table_drugList.getValueAt(row, 2).toString();
 				txf_nameDrugs.setText(nameString);
 				txf_priceDrugs.setText(priceString);
@@ -368,12 +465,11 @@ public class HomePage extends JFrame {
 
 		// table menu
 
-		DefaultTableModel model_menu = new DefaultTableModel(new Object[] { "Name", "Amount", "Price" }, 1);
+		DefaultTableModel model_menu = new DefaultTableModel(new Object[] { "Name", "Amount", "Price", "IdDrugs" }, 1);
 
-		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing?useSSL=false",
-				"root", "123456");
+		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 				java.sql.Statement stmStatement = con.createStatement();
-				ResultSet resultSet = stmStatement.executeQuery("SELECT name, amount, price FROM menu");
+				ResultSet resultSet = stmStatement.executeQuery("SELECT name, amount, price,iddrugs FROM menu");
 
 		) {
 			// lấy dữ liệu thành công
@@ -382,7 +478,8 @@ public class HomePage extends JFrame {
 				String name = resultSet.getString("name");
 				int amount = resultSet.getInt("amount");
 				int price = resultSet.getInt("price");
-				model_menu.addRow(new Object[] { name, amount, price });
+				int idDrugsMenu = resultSet.getInt("iddrugs");
+				model_menu.addRow(new Object[] { idDrugsMenu, name, amount, price, });
 				// import data to table
 
 			}
@@ -399,6 +496,56 @@ public class HomePage extends JFrame {
 		table_menu.setTableHeader(header_menu);
 		totalMenu();
 
+		// chọn hàng để bắt sự kiện button xóa
+		table_menu.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// Lấy chỉ số hàng được chọn
+				int selectedRow = table_menu.getSelectedRow();
+				// Kiểm tra xem hàng đã được chọn hay chưa
+				if (selectedRow != -1) {
+					// Lấy ID của hàng được chọn
+					int id = (int) table_menu.getValueAt(selectedRow, 0);
+					// Lưu ID vào biến toàn cục để sử dụng ở phần khác
+					selectedId = id;
+					btn_deleteDrugs.setEnabled(true);
+				}
+			}
+		});
+
+		btn_deleteDrugs.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				if (selectedId != -1) {
+					String deleteQuery = "DELETE FROM menu WHERE iddrugs = ?";
+					try {
+						Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing",
+								"root", "123456");
+						PreparedStatement ps = conn.prepareStatement(deleteQuery);
+						ps.setInt(1, selectedId);
+						int rowsDeleted = ps.executeUpdate();
+						if (rowsDeleted > 0) {
+							// Nếu có hàng bị xóa, hiển thị thông báo thành công
+							JOptionPane.showMessageDialog(null, "Hủy thành công!");
+							btn_deleteDrugs.setEnabled(false);
+							// Refresh lại dữ liệu trong JTable
+							refreshMenu();
+						} else {
+							// Nếu không có hàng nào bị xóa, hiển thị thông báo lỗi
+							JOptionPane.showMessageDialog(null, "Không thể hủy hàng này!");
+						}
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+				}
+				totalMenu();
+
+			}
+		});
+
 	}
 
 	void addMenu(String name, String amount, String price) {
@@ -408,14 +555,41 @@ public class HomePage extends JFrame {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
-			conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing?useSSL=false", "root",
-					"123456");
-			// PreparedStatement stmt = conn.createStatement();
-			stmt = conn.prepareStatement("INSERT INTO menu(name,price,amount) VALUES(?,?,?)");
-			stmt.setString(1, nameDrugs);
-			stmt.setInt(2, priceDrugs);
-			stmt.setInt(3, amountDrusg);
-			stmt.executeUpdate();
+			conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
+			boolean existed = false;
+			for (int i = 1; i < table_menu.getRowCount(); i++) {
+				// Nếu sản phẩm đã có trong Menu
+				if (table_menu.getValueAt(i, 0).equals(idDrugs)) {
+					existed = true;
+					int oldAmount = Integer.parseInt(table_menu.getValueAt(i, 2).toString());
+					int newAmount = oldAmount + amountDrusg;
+					int oldPrice = Integer.parseInt(table_menu.getValueAt(i, 3).toString());
+					int newPrice = priceDrugs + oldPrice;
+
+					// Cập nhật lại giá trị price và amount của database
+					String sql = "UPDATE menu SET price = ?, amount = ? WHERE iddrugs = ?";
+					PreparedStatement statement = conn.prepareStatement(sql);
+					statement.setInt(1, newPrice);
+					statement.setInt(2, newAmount);
+					statement.setInt(3, idDrugs);
+					statement.executeUpdate();
+					System.out.println(idDrugs);
+
+					break;
+				}
+			}
+			// Sản phẩm chưa có trong Menu => Thêm sản phẩm mới
+			if (!existed) {
+
+				stmt = conn.prepareStatement("INSERT INTO menu(name,price,amount,iddrugs) VALUES(?,?,?,?)");
+				stmt.setString(1, nameDrugs);
+				stmt.setInt(2, priceDrugs);
+				stmt.setInt(3, amountDrusg);
+				stmt.setInt(4, idDrugs);
+				stmt.executeUpdate();
+
+			}
+			refreshMenu();
 
 		} catch (Exception e) {
 
@@ -441,21 +615,23 @@ public class HomePage extends JFrame {
 
 	void refreshMenu() {
 
-		DefaultTableModel model_menu = new DefaultTableModel(new Object[] { "Name", "Amount", "Price" }, 1);
+		DefaultTableModel model_menu = new DefaultTableModel(new Object[] { "Name", "Amount", "Price", "IdDrugs" }, 1);
 
-		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing?useSSL=false",
-				"root", "123456");
+		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 				java.sql.Statement stmStatement = con.createStatement();
-				ResultSet resultSet = stmStatement.executeQuery("SELECT name, amount, price FROM menu");
+				ResultSet resultSet = stmStatement.executeQuery("SELECT name, amount, price,iddrugs FROM menu");
 
 		) {
+			
+			
 			// lấy dữ liệu thành công
 			while (resultSet.next()) {
 
 				String name = resultSet.getString("name");
 				int amount = resultSet.getInt("amount");
 				int price = resultSet.getInt("price");
-				model_menu.addRow(new Object[] { name, amount, price });
+				int idDrugsMenu = resultSet.getInt("iddrugs");
+				model_menu.addRow(new Object[] { idDrugsMenu, name, amount, price });
 				// import data to table
 
 			}
@@ -466,16 +642,43 @@ public class HomePage extends JFrame {
 	}
 
 	public void totalMenu() {
-		double sum = 0.0;
-		int col = 2;
+		int sum = 0;
+		int col = 3;
 
 		for (int row = 0; row < table_menu.getRowCount(); row++) {
 			Object value = table_menu.getValueAt(row, col);
 			if (value != null && value instanceof Number) {
-				sum += ((Number) value).doubleValue();
+				sum += ((Number) value).intValue();
 			}
 		}
 
 		txf_totalMenu.setText(String.valueOf(sum));
+	}
+
+	public void getData() {
+		String selectedPharma = cbx_pharma.getSelectedItem().toString();
+		if (selectedPharma != null && !selectedPharma.isEmpty()) {
+			try {
+				Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root",
+						"123456");
+				String sql = "SELECT drugslist.code, drugslist.name, drugslist.price FROM drugslist "
+						+ "INNER JOIN pharmalv2 ON drugslist.idpk = pharmalv2.id "
+						+ "INNER JOIN pharma ON pharmalv2.idpk = pharma.id " + "WHERE pharma.name = ?";
+				PreparedStatement ps = conn.prepareStatement(sql);
+				ps.setString(1, selectedPharma);
+				ResultSet rs = ps.executeQuery();
+				DefaultTableModel model = (DefaultTableModel) table_drugList.getModel();
+				model.setRowCount(0);
+				while (rs.next()) {
+					int id = rs.getInt("code");
+					String name = rs.getString("name");
+
+					int price = rs.getInt("price");
+					model.addRow(new Object[] { id, name, price });
+				}
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 }

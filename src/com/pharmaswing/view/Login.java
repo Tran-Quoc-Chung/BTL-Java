@@ -111,7 +111,7 @@ public class Login extends JFrame {
 				try {
 					Class.forName("com.mysql.cj.jdbc.Driver");
 					Connection con = DriverManager
-							.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing?useSSL=false", "root", "123456");
+							.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 					java.sql.Statement stmStatement = con.createStatement();
 					String sqlString = "select * from account where username='" + usernameString + "' and password ='"
 							+ passString + "'";
