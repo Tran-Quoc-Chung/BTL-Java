@@ -8,11 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -34,20 +31,19 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 
 public class HomePage extends JFrame {
 
 	private JPanel contentPane;
-	private JTable table_menu;
+
 	private JTextField txf_totalMenu;
 	private JTextField textField_1;
 	private JTextField textField_2;
 	private JTextField txf_nameDrugs;
-	private JTable table_drugList;
+
 	private JScrollPane scrollPane;
 	private JFrame jFrame;
 	private JTextField txf_searchDrugs;
@@ -89,6 +85,7 @@ public class HomePage extends JFrame {
 					HomePage frame = new HomePage();
 					frame.setVisible(true);
 					frame.setLocationRelativeTo(null);
+					frame.pack();
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -119,6 +116,8 @@ public class HomePage extends JFrame {
 		contentPane.add(propertiesDesign.getJLabel4());
 		contentPane.add(propertiesDesign.getJLabel5());
 		contentPane.add(propertiesDesign.getJLabel6());
+		
+		contentPane.add(propertiesDesign.getTableMenu());
 
 		JButton btnNewButton_3 = new JButton("Thanh toán");
 		btnNewButton_3.setFont(new Font("Tahoma", Font.BOLD, 17));
@@ -126,22 +125,7 @@ public class HomePage extends JFrame {
 		btnNewButton_3.setBounds(961, 600, 143, 83);
 		contentPane.add(btnNewButton_3);
 
-		table_menu = new JTable();
-		table_menu.setModel(new DefaultTableModel(new Object[][] {}, new String[] {}));
-		Object[] coluObjects = { "a", "b", "c" };
-		DefaultTableModel model = new DefaultTableModel();
-
-		table_menu.setBackground(SystemColor.menu);
-		table_menu.setForeground(Color.black);
-		table_menu.setSelectionBackground(Color.red);
-		table_menu.setGridColor(Color.red);
-		table_menu.setSelectionForeground(Color.white);
-		table_menu.setRowHeight(30);
-		table_menu.setAutoCreateRowSorter(true);
-
-		table_menu.setBounds(613, 78, 614, 512);
-
-		contentPane.add(table_menu);
+	
 
 		txf_totalMenu = new JTextField();
 		txf_totalMenu.setFont(new Font("Times New Roman", Font.PLAIN, 24));
@@ -164,10 +148,30 @@ public class HomePage extends JFrame {
 		btnNewButton_3_1.setBounds(1114, 600, 113, 83);
 		contentPane.add(btnNewButton_3_1);
 
-		JButton btnNewButton_1_1_1 = new JButton("Hủy giao dịch");
-		btnNewButton_1_1_1.setFont(new Font("Tahoma", Font.BOLD, 16));
-		btnNewButton_1_1_1.setBounds(798, 10, 143, 59);
-		contentPane.add(btnNewButton_1_1_1);
+		JButton btn_cancelMenu = new JButton("Hủy giao dịch");
+		btn_cancelMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int dialogCancle= JOptionPane.showConfirmDialog(null, "Bạn có muốn hủy giao dịch này", "Hủy giao dịch", JOptionPane.YES_NO_CANCEL_OPTION);
+				if(dialogCancle==JOptionPane.YES_OPTION) {
+					try {
+						Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root",
+								"123456");
+						String sql = "DELETE FROM menu";
+						Statement statement = conn.createStatement();
+						statement.executeUpdate(sql);
+						Login.showDialog("Đang hủy giao dịch, vui lòng chờ...", 1500);
+						refreshMenu();
+						Login.showDialog("Hủy thành công", 1000);
+					} catch (Exception e2) {
+						e2.printStackTrace();
+					}
+				}
+			}
+		});
+		btn_cancelMenu.setFont(new Font("Tahoma", Font.BOLD, 16));
+		btn_cancelMenu.setBounds(798, 10, 143, 59);
+		contentPane.add(btn_cancelMenu);
 
 		JButton btnNewButton_1_1_2 = new JButton("Refresh");
 		btnNewButton_1_1_2.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -237,16 +241,19 @@ public class HomePage extends JFrame {
 		cbx_drug.setBounds(197, 36, 216, 35);
 		contentPane.add(cbx_drug);
 
-		table_drugList = new JTable();
-		table_drugList.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		table_drugList.setSelectionForeground(Color.WHITE);
-		table_drugList.setSelectionBackground(new Color(192, 192, 192));
-		table_drugList.setRowHeight(30);
-		table_drugList.setGridColor(Color.LIGHT_GRAY);
-		table_drugList.setForeground(Color.BLACK);
-		table_drugList.setBackground(new Color(128, 255, 255));
-		table_drugList.setBounds(10, 146, 560, 427);
-		contentPane.add(table_drugList);
+		contentPane.add(propertiesDesign.getTableDrugsList());
+
+
+		JScrollPane listDrugScrollPane = new JScrollPane();
+		listDrugScrollPane.setBounds(15, 150, 570, 437);
+		listDrugScrollPane.setViewportView(propertiesDesign.getTableDrugsList());
+		contentPane.add(listDrugScrollPane);
+
+		JScrollPane listMenuScrollPane = new JScrollPane();
+		listMenuScrollPane.setBounds(613, 78, 614, 512);
+		listMenuScrollPane.setViewportView(propertiesDesign.getTableMenu());
+		propertiesDesign.getTableMenu().setFillsViewportHeight(true);
+		contentPane.add(listMenuScrollPane);
 
 		JButton btn_deleteDrugs = new JButton("Hủy hàng");
 		btn_deleteDrugs.setEnabled(false);
@@ -254,9 +261,9 @@ public class HomePage extends JFrame {
 		btn_deleteDrugs.setBounds(645, 10, 143, 58);
 		contentPane.add(btn_deleteDrugs);
 
-		// combobox pharma
 
-		// cbx_pharma.addItem("");
+
+		 cbx_pharma.addItem("");
 
 		try {
 			Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
@@ -276,9 +283,6 @@ public class HomePage extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				cbx_drug.removeAllItems();
-
-//		      //  cbx_drug.addItem("");
-//
 				try {
 
 					Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root",
@@ -319,10 +323,14 @@ public class HomePage extends JFrame {
 						ps.setString(1, selectedDrug);
 						ResultSet rs = ps.executeQuery();
 
-						DefaultTableModel model = new DefaultTableModel();
-						model.addColumn("Code");
-						model.addColumn("Name");
-						model.addColumn("Price");
+						DefaultTableModel model = new DefaultTableModel() {
+							public boolean isCellEditable(int row, int column) {
+								return false; // không cho phép chỉnh sửa
+							}
+						};
+						model.addColumn("Mã hàng");
+						model.addColumn("Tên hàng");
+						model.addColumn("Giá tiền");
 
 						while (rs.next()) {
 							Object[] row = new Object[3];
@@ -332,7 +340,8 @@ public class HomePage extends JFrame {
 							model.addRow(row);
 						}
 
-						table_drugList.setModel(model);
+						propertiesDesign.getTableDrugsList().setModel(model);
+						setWidthColumnTable(propertiesDesign.getTableDrugsList(), 50, 220, 60);
 
 					}
 				} catch (SQLException ex) {
@@ -340,48 +349,13 @@ public class HomePage extends JFrame {
 				}
 			}
 		});
-
-//		cbx_pharma.addItemListener(new ItemListener() {
-//
-//			@Override
-//			public void itemStateChanged(ItemEvent e) {
-//				if (e.getStateChange() == ItemEvent.SELECTED) {
-//
-//					String selectedPharma = cbx_pharma.getSelectedItem().toString();
-//
-//					cbx_drug.removeAllItems();
-//
-//					try {
-//						Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing",
-//								"root", "123456");
-//						// String query = "SELECT name FROM drugs WHERE pharma = ?";
-//						Statement stmt = conn.createStatement();
-//
-//						// stmt.setString(1, selectedQuocGia);
-//						ResultSet rs = stmt.executeQuery(
-//								"SELECT * FROM drugs WHERE id_pharma IN (SELECT id FROM pharma WHERE name='"
-//										+ selectedPharma + "')");
-//
-//						while (rs.next()) {
-//
-//							cbx_drug.addItem(rs.getString("name"));
-//						}
-//
-//						rs.close();
-//						stmt.close();
-//						conn.close();
-//					} catch (SQLException ex) {
-//						System.out.println(ex);
-//					}
-//
-//				}
-//			}
-//		});
-
 		// table list drugs
 
-		DefaultTableModel model = new DefaultTableModel(new Object[] { "ID", "Name", "Price" }, 1);
-
+		DefaultTableModel model = new DefaultTableModel(new Object[] { "Mã hàng", "Tên hàng", "Giá tiền" }, 0) {
+			public boolean isCellEditable(int row, int column) {
+				return false; // không cho phép chỉnh sửa
+			}
+		};
 		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 				java.sql.Statement stmStatement = con.createStatement();
 				ResultSet resultSet = stmStatement.executeQuery("SELECT code, name, price FROM drugslist");
@@ -399,13 +373,12 @@ public class HomePage extends JFrame {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		table_drugList.setModel(model);
-		JTableHeader header = table_drugList.getTableHeader();
-		header.setFont(new Font("Arial", Font.BOLD, 14));
-		table_drugList.getColumnModel().getColumn(0).setHeaderValue("ID");
-		table_drugList.getColumnModel().getColumn(1).setHeaderValue("Name");
-		table_drugList.getColumnModel().getColumn(2).setHeaderValue("Price");
-		table_drugList.setTableHeader(header);
+
+		propertiesDesign.getTableDrugsList().setModel(model);
+		JTableHeader header = propertiesDesign.getTableDrugsList().getTableHeader();
+		header.setFont(new Font("Arial", Font.BOLD, 18));
+
+//		
 
 		JSpinner spin_count = new JSpinner();
 		spin_count.setFont(new Font("Tahoma", Font.PLAIN, 20));
@@ -446,15 +419,15 @@ public class HomePage extends JFrame {
 		contentPane.add(txf_priceDrugs);
 		txf_priceDrugs.setColumns(10);
 
-		table_drugList.addMouseListener(new MouseAdapter() {
+		propertiesDesign.getTableDrugsList().addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
 
-				int row = table_drugList.getSelectedRow();
-				String nameString = table_drugList.getValueAt(row, 1).toString();
-				String priceString = table_drugList.getValueAt(row, 2).toString();
-				idDrugs = (int) table_drugList.getValueAt(row, 0);
-				priceDrugs = table_drugList.getValueAt(row, 2).toString();
+				int row = propertiesDesign.getTableDrugsList().getSelectedRow();
+				String nameString = propertiesDesign.getTableDrugsList().getValueAt(row, 1).toString();
+				String priceString = propertiesDesign.getTableDrugsList().getValueAt(row, 2).toString();
+				idDrugs = (int) propertiesDesign.getTableDrugsList().getValueAt(row, 0);
+				priceDrugs = propertiesDesign.getTableDrugsList().getValueAt(row, 2).toString();
 				txf_nameDrugs.setText(nameString);
 				txf_priceDrugs.setText(priceString);
 				spin_count.setValue(1);
@@ -462,10 +435,15 @@ public class HomePage extends JFrame {
 			}
 
 		});
-
+		setWidthColumnTable(propertiesDesign.getTableDrugsList(), 50, 220, 60);
 		// table menu
 
-		DefaultTableModel model_menu = new DefaultTableModel(new Object[] { "Name", "Amount", "Price", "IdDrugs" }, 1);
+		DefaultTableModel model_menu = new DefaultTableModel(
+				new Object[] { "Mã hàng", "Tên hàng", "Số lượng", "Thành tiền" }, 0) {
+			public boolean isCellEditable(int row, int column) {
+				return false; // không cho phép chỉnh sửa
+			}
+		};
 
 		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 				java.sql.Statement stmStatement = con.createStatement();
@@ -486,33 +464,30 @@ public class HomePage extends JFrame {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		table_menu.setModel(model_menu);
+		propertiesDesign.getTableMenu().setModel(model_menu);
 
-		JTableHeader header_menu = table_menu.getTableHeader();
-		header.setFont(new Font("Arial", Font.BOLD, 14));
-		table_menu.getColumnModel().getColumn(0).setHeaderValue("ID");
-		table_menu.getColumnModel().getColumn(1).setHeaderValue("Name");
-		table_menu.getColumnModel().getColumn(2).setHeaderValue("Price");
-		table_menu.setTableHeader(header_menu);
+		JTableHeader header_menu = propertiesDesign.getTableMenu().getTableHeader();
+		header_menu.setFont(new Font("Arial", Font.BOLD, 18));
 		totalMenu();
 
 		// chọn hàng để bắt sự kiện button xóa
-		table_menu.addMouseListener(new MouseAdapter() {
+		propertiesDesign.getTableMenu().addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// Lấy chỉ số hàng được chọn
-				int selectedRow = table_menu.getSelectedRow();
+				int selectedRow = propertiesDesign.getTableMenu().getSelectedRow();
 				// Kiểm tra xem hàng đã được chọn hay chưa
 				if (selectedRow != -1) {
 					// Lấy ID của hàng được chọn
-					int id = (int) table_menu.getValueAt(selectedRow, 0);
+					int id = (int) propertiesDesign.getTableMenu().getValueAt(selectedRow, 0);
 					// Lưu ID vào biến toàn cục để sử dụng ở phần khác
 					selectedId = id;
 					btn_deleteDrugs.setEnabled(true);
 				}
 			}
 		});
+		setWidthColumnTable(propertiesDesign.getTableMenu(), 30, 220, 30);
 
 		btn_deleteDrugs.addActionListener(new ActionListener() {
 
@@ -548,6 +523,13 @@ public class HomePage extends JFrame {
 
 	}
 
+	void setWidthColumnTable(JTable table, int x1, int x2, int x3) {
+		TableColumnModel columnModel = table.getColumnModel();
+		columnModel.getColumn(0).setPreferredWidth(x1);
+		columnModel.getColumn(1).setPreferredWidth(x2);
+		columnModel.getColumn(2).setPreferredWidth(x3);
+	}
+
 	void addMenu(String name, String amount, String price) {
 		String nameDrugs = name;
 		int priceDrugs = Integer.parseInt(price);
@@ -557,14 +539,15 @@ public class HomePage extends JFrame {
 		try {
 			conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 			boolean existed = false;
-			for (int i = 1; i < table_menu.getRowCount(); i++) {
+			for (int i = 0; i < propertiesDesign.getTableMenu().getRowCount(); i++) {
 				// Nếu sản phẩm đã có trong Menu
-				if (table_menu.getValueAt(i, 0).equals(idDrugs)) {
+				if (propertiesDesign.getTableMenu().getValueAt(i, 0).equals(idDrugs)) {
 					existed = true;
-					int oldAmount = Integer.parseInt(table_menu.getValueAt(i, 2).toString());
+					int oldAmount = Integer.parseInt(propertiesDesign.getTableMenu().getValueAt(i, 2).toString());
 					int newAmount = oldAmount + amountDrusg;
-					int oldPrice = Integer.parseInt(table_menu.getValueAt(i, 3).toString());
+					int oldPrice = Integer.parseInt(propertiesDesign.getTableMenu().getValueAt(i, 3).toString());
 					int newPrice = priceDrugs + oldPrice;
+				
 
 					// Cập nhật lại giá trị price và amount của database
 					String sql = "UPDATE menu SET price = ?, amount = ? WHERE iddrugs = ?";
@@ -615,18 +598,21 @@ public class HomePage extends JFrame {
 
 	void refreshMenu() {
 
-		DefaultTableModel model_menu = new DefaultTableModel(new Object[] { "Name", "Amount", "Price", "IdDrugs" }, 1);
+		DefaultTableModel model_menu = new DefaultTableModel(
+				new Object[] { "Mã hàng", "Tên hàng", "Số lượng", "Thành tiền", }, 0) {
+				public boolean isCellEditable(int row, int column) {
+				return false; // không cho phép chỉnh sửa
+			}
+		};
 
 		try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
 				java.sql.Statement stmStatement = con.createStatement();
 				ResultSet resultSet = stmStatement.executeQuery("SELECT name, amount, price,iddrugs FROM menu");
 
 		) {
-			
-			
 			// lấy dữ liệu thành công
 			while (resultSet.next()) {
-
+			
 				String name = resultSet.getString("name");
 				int amount = resultSet.getInt("amount");
 				int price = resultSet.getInt("price");
@@ -638,15 +624,15 @@ public class HomePage extends JFrame {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		table_menu.setModel(model_menu);
+		propertiesDesign.getTableMenu().setModel(model_menu);
 	}
 
 	public void totalMenu() {
 		int sum = 0;
 		int col = 3;
 
-		for (int row = 0; row < table_menu.getRowCount(); row++) {
-			Object value = table_menu.getValueAt(row, col);
+		for (int row = 0; row < propertiesDesign.getTableMenu().getRowCount(); row++) {
+			Object value = propertiesDesign.getTableMenu().getValueAt(row, col);
 			if (value != null && value instanceof Number) {
 				sum += ((Number) value).intValue();
 			}
@@ -667,18 +653,19 @@ public class HomePage extends JFrame {
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, selectedPharma);
 				ResultSet rs = ps.executeQuery();
-				DefaultTableModel model = (DefaultTableModel) table_drugList.getModel();
+				DefaultTableModel model = (DefaultTableModel) propertiesDesign.getTableDrugsList().getModel();
 				model.setRowCount(0);
 				while (rs.next()) {
 					int id = rs.getInt("code");
 					String name = rs.getString("name");
-
 					int price = rs.getInt("price");
 					model.addRow(new Object[] { id, name, price });
+					
 				}
 			} catch (SQLException ex) {
 				ex.printStackTrace();
 			}
 		}
 	}
+
 }
