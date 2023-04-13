@@ -1,9 +1,14 @@
 package com.pharmaswing.view;
 
+import java.awt.Checkbox;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.SystemColor;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -12,16 +17,22 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -33,6 +44,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
@@ -41,19 +53,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
-import javax.swing.ImageIcon;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import java.awt.Dimension;
+import java.awt.Component;
 
 public class HomePage extends JFrame {
 
 	private JPanel contentPane;
 
 	private JTextField txf_totalMenu;
-	private JTextField textField_1;
-	private JTextField textField_2;
+	private JTextField txf_voucher;
+	private JTextField txf_totalBill;
 	private JTextField txf_nameDrugs;
 	private JTextField txf_searchDrugs;
 	private JTextField txf_priceDrugs;
@@ -62,12 +70,19 @@ public class HomePage extends JFrame {
 	private int idDrugs;
 	private int spinValue;
 	private JComboBox<String> cbx_pharma;
-	
+	private Boolean toogleVoucher = true;
+	private JLabel lbl_dateTime;
+	private JToolBar toolBar;
+	private JButton btn_toolbar_manage_Drugs, btn_toolbar_manage_User, btn_toolbar_Support, btn_toolbar_exit,
+			btn_toolbar_LogOut, btn_toolbar_revenue, btn_toolbar_history, btn_toolbar_manage_Voucher;
+	private Boolean checkUseJToolBar=true;
 	/**
 	 * Launch the application.
 	 */
-	Login login= new Login();
+	// Login login = new Login();
 	PropertiesDesign propertiesDesign = new PropertiesDesign();
+	GetInfoUser getInfoUser = GetInfoUser.getInstance();
+	DecimalFormat df = new DecimalFormat("#.##");
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -89,12 +104,13 @@ public class HomePage extends JFrame {
 	 */
 
 	public void declaredAllDesign() {
-
 		setTitle("HomePage-PharmaApp");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1251, 761);
 		contentPane = new JPanel();
-		
+
+		ImageIcon logo = new ImageIcon("path/to/PharmaSwing/src/image/logo.jpg");
+
 		contentPane.setName("");
 		contentPane.setForeground(new Color(0, 0, 0));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -111,9 +127,14 @@ public class HomePage extends JFrame {
 		contentPane.add(propertiesDesign.getTableMenu());
 
 		JButton btnNewButton_3 = new JButton("Thanh toán");
+		btnNewButton_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+			}
+		});
 		btnNewButton_3.setFont(new Font("Tahoma", Font.BOLD, 17));
 		btnNewButton_3.setBackground(new Color(240, 240, 240));
-		btnNewButton_3.setBounds(961, 600, 143, 83);
+		btnNewButton_3.setBounds(962, 600, 143, 83);
 		contentPane.add(btnNewButton_3);
 
 		txf_totalMenu = new JTextField();
@@ -123,22 +144,62 @@ public class HomePage extends JFrame {
 		contentPane.add(txf_totalMenu);
 		txf_totalMenu.setColumns(10);
 
-		textField_1 = new JTextField();
-		textField_1.setEditable(false);
-		textField_1.setColumns(10);
-		textField_1.setBounds(656, 652, 142, 42);
-		contentPane.add(textField_1);
+		txf_voucher = new JTextField();
+		txf_voucher.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+		txf_voucher.setEditable(false);
+		txf_voucher.setColumns(10);
+		txf_voucher.setBounds(656, 652, 142, 42);
+		contentPane.add(txf_voucher);
 
-		textField_2 = new JTextField();
-		textField_2.setEditable(false);
-		textField_2.setBounds(808, 636, 144, 56);
-		contentPane.add(textField_2);
-		textField_2.setColumns(10);
+		txf_totalBill = new JTextField();
+		txf_totalBill.setEditable(false);
+		txf_totalBill.setBounds(808, 636, 144, 56);
+		contentPane.add(txf_totalBill);
+		txf_totalBill.setColumns(10);
 
-		JButton btnNewButton_3_1 = new JButton("Voucher");
-		btnNewButton_3_1.setFont(new Font("Tahoma", Font.BOLD, 19));
-		btnNewButton_3_1.setBounds(1114, 600, 113, 83);
-		contentPane.add(btnNewButton_3_1);
+		JButton btn_voucher = new JButton("Voucher");
+		btn_voucher.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				toogleVoucher = !toogleVoucher;
+
+				if (!toogleVoucher) {
+					String vouchercode = JOptionPane.showInputDialog("Nhập voucher giảm giá");
+					try (Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing",
+							"root", "123456");
+							java.sql.Statement stmStatement = con.createStatement();
+							ResultSet resultSet = stmStatement
+									.executeQuery("SELECT * FROM voucher WHERE codevoucher = '" + vouchercode
+											+ "' AND startdate <= NOW() AND enddate >= NOW()")) {
+						if (resultSet.next()) {
+							float discount = resultSet.getFloat("discount");
+							int totalMenu = Integer.parseInt(txf_totalMenu.getText());
+							propertiesDesign.setVoucher(discount);
+							checkVoucherValue(txf_totalMenu, discount);
+							btn_voucher.setText("Hủy voucher");
+
+						} else {
+							JOptionPane.showMessageDialog(null,
+									"Voucher không tồn tại hoặc không trong thời gian sử dụng. Vui lòng thử lại!!");
+							toogleVoucher = true;
+						}
+
+					} catch (Exception e2) {
+						e2.printStackTrace();
+					}
+
+				} else {
+					// propertiesDesign.setVoucher(0);
+					checkVoucherValue(txf_totalMenu, 0);
+					btn_voucher.setText("Thêm voucher");
+					JOptionPane.showMessageDialog(null, "Hủy voucher thành công");
+
+				}
+			}
+		});
+		btn_voucher.setFont(new Font("Tahoma", Font.BOLD, 19));
+		btn_voucher.setBounds(1114, 600, 113, 83);
+		contentPane.add(btn_voucher);
 
 		JButton btn_cancelMenu = new JButton("Hủy giao dịch");
 		btn_cancelMenu.addActionListener(new ActionListener() {
@@ -156,6 +217,7 @@ public class HomePage extends JFrame {
 							Login.showDialog("Đang hủy giao dịch, vui lòng chờ...", 1500);
 							refreshMenu();
 							totalMenu();
+							txf_voucher.setText("0");
 							Login.showDialog("Hủy thành công", 1000);
 
 						} catch (Exception e2) {
@@ -175,6 +237,7 @@ public class HomePage extends JFrame {
 		contentPane.add(btn_cancelMenu);
 
 		JButton btnNewButton_1_1_2 = new JButton("Refresh");
+
 		btnNewButton_1_1_2.setFont(new Font("Tahoma", Font.BOLD, 20));
 		btnNewButton_1_1_2.setBounds(944, 10, 130, 58);
 		contentPane.add(btnNewButton_1_1_2);
@@ -182,28 +245,25 @@ public class HomePage extends JFrame {
 		txf_nameDrugs = new JTextField();
 		txf_nameDrugs.setEditable(false);
 		txf_nameDrugs.setFont(new Font("Tahoma", Font.PLAIN, 22));
-		txf_nameDrugs.setBounds(83, 614, 307, 42);
+		txf_nameDrugs.setBounds(232, 619, 204, 42);
 		txf_nameDrugs.setColumns(10);
 		contentPane.add(txf_nameDrugs);
 
-		
-		
-		   // Tạo DefaultTableModel để lưu trữ dữ liệu cho JTable
-        String[] columnNames = {"Code", "Name", "Price"};
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-        propertiesDesign.getTableDrugsList().setModel(model);
-		
+		// Tạo DefaultTableModel để lưu trữ dữ liệu cho JTable
+		String[] columnNames = { "Code", "Name", "Price" };
+		DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+		propertiesDesign.getTableDrugsList().setModel(model);
+
 		txf_searchDrugs = new JTextField();
 		txf_searchDrugs.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
-				
-			    String keyword = txf_searchDrugs.getText();
-                model.setRowCount(0);
-                List<Drug> drugs = Database.searchDrugs(keyword);
-                updateTable(drugs);
 
-				
+				String keyword = txf_searchDrugs.getText();
+				model.setRowCount(0);
+				List<Drug> drugs = Database.searchDrugs(keyword);
+				updateTable(drugs);
+
 			}
 		});
 		txf_searchDrugs.addFocusListener(new FocusAdapter() {
@@ -230,32 +290,35 @@ public class HomePage extends JFrame {
 		contentPane.add(separator);
 
 	}
-	   private void updateTable(List<Drug> drugs) {
-	        DefaultTableModel model = (DefaultTableModel) propertiesDesign.getTableDrugsList().getModel();
-	        model.setRowCount(0);
-	        for (Drug drug : drugs) {
-	            model.addRow(new Object[] { drug.getCode(), drug.getName(), drug.getPrice() });
-	        }
-	    }
-	public HomePage() {
-		declaredAllDesign();
-		
 
-		contentPane.add(login.getJLabel());
-		System.out.println(login.getJLabel());
-		
+	private void updateTable(List<Drug> drugs) {
+		DefaultTableModel model = (DefaultTableModel) propertiesDesign.getTableDrugsList().getModel();
+		model.setRowCount(0);
+		for (Drug drug : drugs) {
+			model.addRow(new Object[] { drug.getCode(), drug.getName(), drug.getPrice() });
+		}
+	}
+
+	public HomePage() throws SQLException {
+
+		setFont(new Font("Dialog", Font.PLAIN, 17));
+		setIconImage(Toolkit.getDefaultToolkit()
+				.getImage("C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\logoApp.png"));
+		declaredAllDesign();
+
 		cbx_pharma = new JComboBox();
-		cbx_pharma.setBounds(10, 67, 177, 35);
+		cbx_pharma.setBounds(129, 67, 177, 35);
 		contentPane.add(cbx_pharma);
 
 		JComboBox cbx_drug = new JComboBox();
-		cbx_drug.setBounds(227, 70, 216, 32);
+		cbx_drug.setBounds(342, 68, 216, 32);
 		contentPane.add(cbx_drug);
 		contentPane.add(propertiesDesign.getTableDrugsList());
 
 		JScrollPane listDrugScrollPane = new JScrollPane();
-		listDrugScrollPane.setBounds(15, 177, 570, 410);
+		listDrugScrollPane.setBounds(99, 167, 499, 410);
 		listDrugScrollPane.setViewportView(propertiesDesign.getTableDrugsList());
+		propertiesDesign.getTableDrugsList().setFillsViewportHeight(true);
 		contentPane.add(listDrugScrollPane);
 
 		JScrollPane listMenuScrollPane = new JScrollPane();
@@ -270,6 +333,13 @@ public class HomePage extends JFrame {
 		btn_deleteDrugs.setBounds(645, 10, 143, 58);
 		contentPane.add(btn_deleteDrugs);
 		cbx_pharma.addItem("");
+
+		JLabel lbl_user = new JLabel();
+		lbl_user = new JLabel("test");
+		lbl_user.setFont(new Font("Tahoma", Font.PLAIN, 17));
+		lbl_user.setBounds(808, 702, 177, 26);
+		contentPane.add(lbl_user);
+		lbl_user.setText(getInfoUser.getstaffname() + "-ID: " + getInfoUser.getIdstaff());
 
 		try {
 			Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
@@ -340,7 +410,7 @@ public class HomePage extends JFrame {
 
 						while (rs.next()) {
 							Object[] row = new Object[3];
-							row[0] = rs.getString("code");
+							row[0] = rs.getInt("code");
 							row[1] = rs.getString("name");
 							row[2] = rs.getInt("price");
 							model.addRow(row);
@@ -386,7 +456,7 @@ public class HomePage extends JFrame {
 
 		JSpinner spin_count = new JSpinner();
 		spin_count.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		spin_count.setBounds(129, 666, 76, 41);
+		spin_count.setBounds(232, 667, 62, 41);
 		spin_count.setModel(new SpinnerNumberModel(1, 1, null, 1));
 
 		contentPane.add(spin_count);
@@ -406,97 +476,144 @@ public class HomePage extends JFrame {
 		btn_addToMenu.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				
+
 				addMenu(txf_nameDrugs.getText(), spin_count.getValue().toString(), txf_priceDrugs.getText());
 				refreshMenu();
 				totalMenu();
 				setWidthColumnTable(propertiesDesign.getTableMenu(), 30, 220, 30);
-				
+				int totalMenu = Integer.parseInt(txf_totalMenu.getText());
+				if (!toogleVoucher) {
+					// txf_voucher.setText("-
+					// "+String.valueOf(propertiesDesign.getVoucher()*totalMenu));
+					checkVoucherValue(txf_totalMenu, propertiesDesign.getVoucher());
+				}
 
 			}
 		});
 		btn_addToMenu.setFont(new Font("Tahoma", Font.BOLD, 20));
-		btn_addToMenu.setBounds(400, 600, 113, 107);
+		btn_addToMenu.setBounds(447, 613, 66, 92);
 		contentPane.add(btn_addToMenu);
 
 		txf_priceDrugs = new JTextField();
 		txf_priceDrugs.setEditable(false);
 		txf_priceDrugs.setFont(new Font("Tahoma", Font.PLAIN, 22));
-		txf_priceDrugs.setBounds(253, 666, 137, 41);
+		txf_priceDrugs.setBounds(334, 666, 113, 41);
 		contentPane.add(txf_priceDrugs);
 		txf_priceDrugs.setColumns(10);
-		
-		JLabel lbl_dateTime = new JLabel("New label");
+
+		lbl_dateTime = new JLabel("New label");
 		lbl_dateTime.setFont(new Font("Tahoma", Font.PLAIN, 17));
 		lbl_dateTime.setBounds(1035, 701, 192, 23);
 		contentPane.add(lbl_dateTime);
-		
+
 		JLabel lblNewLabel = new JLabel("Nhân viên sử dụng:");
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 17));
 		lblNewLabel.setBounds(656, 704, 155, 20);
 		contentPane.add(lblNewLabel);
-		
-		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBackground(SystemColor.menu);
-		menuBar.setBounds(0, 0, 578, 35);
-		contentPane.add(menuBar);
-		
-		JMenu mnNewMenu = new JMenu("Quản lí");
-		mnNewMenu.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		mnNewMenu.setPreferredSize(new Dimension(100, 24));
-		menuBar.add(mnNewMenu);
-		
-		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Quản lí nhân viên");
-		mnNewMenu.add(mntmNewMenuItem_2);
-		
-		JMenuItem mntmNewMenuItem_3 = new JMenuItem("Quản lí kho");
-		mnNewMenu.add(mntmNewMenuItem_3);
-		
-		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Xem doanh thu");
-		mntmNewMenuItem_1.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		mntmNewMenuItem_1.addActionListener(new ActionListener() {
+
+		JButton btnNewButton_1_1_3 = new JButton("Đăng xuất");
+		btnNewButton_1_1_3.setBounds(1094, 10, 119, 58);
+		contentPane.add(btnNewButton_1_1_3);
+		btnNewButton_1_1_3.setPreferredSize(new Dimension(86, 28));
+		btnNewButton_1_1_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("test");
+
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Bạn có muốn đăng xuất không?",
+						"Xác nhận đăng xuất", JOptionPane.YES_NO_OPTION);
+				if (dialogResult == JOptionPane.YES_OPTION) {
+					setVisible(false);
+					// Login login = new Login();
+					// login.setVisible(true);
+				}
 			}
 		});
-		mntmNewMenuItem_1.setPreferredSize(new Dimension(132, 24));
-		menuBar.add(mntmNewMenuItem_1);
+		btnNewButton_1_1_3.setFont(new Font("Tahoma", Font.BOLD, 17));
+
+		toolBar = new JToolBar(null, JToolBar.VERTICAL);
+		toolBar.setAlignmentX(Component.CENTER_ALIGNMENT);
+		toolBar.setFloatable(false);
+		toolBar.setBackground(new Color(153, 255, 255));
+		toolBar.setBounds(0, 0, 73, 691);
+		contentPane.add(toolBar);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_manage_Drugs = new JButton();
+		btn_toolbar_manage_Drugs = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\logoApp.png",
+				"Quản lí thuốc", 45, 45);
+		toolBar.add(btn_toolbar_manage_Drugs);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_manage_User = new JButton();
+		btn_toolbar_manage_User = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\nguoidung.png",
+				"Quản lí người dùng", 45, 45);
+		toolBar.add(btn_toolbar_manage_User);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_manage_Voucher = new JButton();
+		btn_toolbar_manage_Voucher = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\voucher.png",
+				"Quản lí voucher", 45, 45);
+		toolBar.add(btn_toolbar_manage_Voucher);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_history = new JButton();
+		btn_toolbar_history = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\lichsugiaodich2.png",
+				"Lịch sử giao dịch", 45, 45);
+		toolBar.add(btn_toolbar_history);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_revenue = new JButton();
+		btn_toolbar_revenue = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\Doanhthu.png", "Doanh thu",
+				45, 45);
+		toolBar.add(btn_toolbar_revenue);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_LogOut = new JButton();
+		btn_toolbar_LogOut = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\dangxuat.png",
+				"Đăng xuất ứng dụng", 45, 45);
+		toolBar.add(btn_toolbar_LogOut);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_exit = new JButton();
+		btn_toolbar_exit = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\Thoatchuongtrinh.png",
+				"Thoát chương trình", 45, 45);
+		toolBar.add(btn_toolbar_exit);
+		toolBar.add(Box.createVerticalStrut(30));
+
+		btn_toolbar_Support = new JButton();
+		btn_toolbar_Support = createToolbarButton(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\Trogiup2.png", "Trợ giúp ",
+				45, 45);
+		toolBar.add(btn_toolbar_Support);
+		toolBar.add(Box.createVerticalStrut(30));
 		
-		JMenuItem mntmNewMenuItem = new JMenuItem("Lịch sử giao dịch");
-		mntmNewMenuItem.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		menuBar.add(mntmNewMenuItem);
-		
-		JMenuItem mntmNewMenuItem_4 = new JMenuItem("Trợ giúp");
-		mntmNewMenuItem_4.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		mntmNewMenuItem_4.setPreferredSize(new Dimension(89, 24));
-		menuBar.add(mntmNewMenuItem_4);
-		
-		JMenuItem mntmNewMenuItem_5 = new JMenuItem("Đăng xuất");
-		mntmNewMenuItem_5.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		mntmNewMenuItem_5.setPreferredSize(new Dimension(96, 24));
-		menuBar.add(mntmNewMenuItem_5);
+		JButton btn_useJToolBar = new JButton("<<<");
+		btn_useJToolBar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(checkUseJToolBar) {
+					toolBar.setBounds(0, 0, 0, 0);
+					btn_useJToolBar.setText(">>>");
+					
+				}else {
+					toolBar.setBounds(0, 0, 73, 691);
+					btn_useJToolBar.setText("<<<");
+					
+				}
+				checkUseJToolBar=!checkUseJToolBar;
+			
 				
-						JButton btnNewButton_1_1_3 = new JButton("Đăng xuất");
-						btnNewButton_1_1_3.setBounds(1094, 10, 119, 58);
-						contentPane.add(btnNewButton_1_1_3);
-						btnNewButton_1_1_3.setPreferredSize(new Dimension(86, 28));
-						btnNewButton_1_1_3.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-
-								int dialogResult = JOptionPane.showConfirmDialog(null, "Bạn có muốn đăng xuất không?",
-										"Xác nhận đăng xuất", JOptionPane.YES_NO_OPTION);
-								if (dialogResult == JOptionPane.YES_OPTION) {
-									setVisible(false);
-									Login login = new Login();
-									login.setVisible(true);
-								}
-							}
-						});
-						btnNewButton_1_1_3.setFont(new Font("Tahoma", Font.BOLD, 17));
-		
-
-		
-
+			}
+		});
+		btn_useJToolBar.setBorder(null);
+		btn_useJToolBar.setFont(new Font("Tahoma", Font.BOLD, 15));
+		btn_useJToolBar.setBounds(0, 688, 73, 26);
+		contentPane.add(btn_useJToolBar);
 
 		propertiesDesign.getTableDrugsList().addMouseListener(new MouseAdapter() {
 
@@ -510,7 +627,7 @@ public class HomePage extends JFrame {
 				txf_nameDrugs.setText(nameString);
 				txf_priceDrugs.setText(priceString);
 				spin_count.setValue(1);
-				
+
 			}
 
 		});
@@ -582,11 +699,13 @@ public class HomePage extends JFrame {
 						ps.setInt(1, selectedId);
 						int rowsDeleted = ps.executeUpdate();
 						if (rowsDeleted > 0) {
+
 							// Nếu có hàng bị xóa, hiển thị thông báo thành công
 							JOptionPane.showMessageDialog(null, "Hủy thành công!");
 							btn_deleteDrugs.setEnabled(false);
 							// Refresh lại dữ liệu trong JTable
 							refreshMenu();
+
 						} else {
 							// Nếu không có hàng nào bị xóa, hiển thị thông báo lỗi
 							JOptionPane.showMessageDialog(null, "Không thể hủy hàng này!");
@@ -595,20 +714,27 @@ public class HomePage extends JFrame {
 						ex.printStackTrace();
 					}
 				}
+				// Tính lại Tổng tiền
 				totalMenu();
+				// Cập nhật JtextField Voucher
+				if (!toogleVoucher) {
+					checkVoucherValue(txf_totalMenu, propertiesDesign.getVoucher());
+				}
 				setWidthColumnTable(propertiesDesign.getTableMenu(), 30, 220, 30);
 
 			}
 		});
-		   Timer timer = new Timer(1000, new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                Calendar calendar = Calendar.getInstance();
-	                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
-	                String dateTime = dateFormat.format(calendar.getTime());
-	                lbl_dateTime.setText(dateTime);
-	            }
-	        });
-	        timer.start();
+		Timer timer = new Timer(1000, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Calendar calendar = Calendar.getInstance();
+				SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+				String dateTime = dateFormat.format(calendar.getTime());
+				lbl_dateTime.setText(dateTime);
+			}
+		});
+		timer.start();
+
+		// checkVoucherValue(txf_totalMenu, propertiesDesign.getVoucher());
 	}
 
 	void setWidthColumnTable(JTable table, int x1, int x2, int x3) {
@@ -643,7 +769,7 @@ public class HomePage extends JFrame {
 					statement.setInt(2, newAmount);
 					statement.setInt(3, idDrugs);
 					statement.executeUpdate();
-					
+
 					break;
 				}
 			}
@@ -713,6 +839,15 @@ public class HomePage extends JFrame {
 		propertiesDesign.getTableMenu().setModel(model_menu);
 	}
 
+	Double checkVoucherValue(JTextField jTextField, double voucher) {
+		// Cập nhật JtextField Voucher
+		String total = jTextField.getText();
+		double a = voucher * Integer.parseInt(total);
+		// txf_voucher.setText("- "+String.valueOf(voucher*Integer.parseInt(total)));
+		txf_voucher.setText("-  " + df.format(a));
+		return voucher;
+	}
+
 	public void totalMenu() {
 		int sum = 0;
 		int col = 3;
@@ -753,5 +888,27 @@ public class HomePage extends JFrame {
 			}
 		}
 	}
-}
 
+	private JButton createToolbarButton(String iconPath, String tooltip, int sizeWidth, int sizeHeight) {
+		JButton button = new JButton();
+
+		button.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		button.setAlignmentX(JButton.CENTER_ALIGNMENT);
+		button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		button.setBackground(new Color(153, 255, 255));
+		button.setBorder(null);
+		button.setBorderPainted(false);
+
+		try {
+			Image img = ImageIO.read(new File(iconPath));
+			Image scaledImg = img.getScaledInstance(sizeWidth, sizeHeight, Image.SCALE_SMOOTH);
+			ImageIcon icon = new ImageIcon(scaledImg);
+			button.setIcon(icon);
+			button.setToolTipText(tooltip);
+
+		} catch (IOException ex) {
+			System.out.println(ex.getMessage());
+		}
+		return button;
+	}
+}

@@ -4,15 +4,17 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.security.PublicKey;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.util.TimerTask;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -24,6 +26,11 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
+import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Login extends JFrame {
 
@@ -32,31 +39,22 @@ public class Login extends JFrame {
 	private JPasswordField txfPassword;
 	private JTextField txtUsername;
 	private JTextField txtPassword;
-	public int id;
-	public String namestaff;
-	private JLabel lbl_user;
+	private Timer timer;
+	private boolean showPass=false;
+
 	/**
 	 * Launch the application.
 	 */
 	static JButton btnLogin = new JButton("LOGIN");
-	
+	private JLabel lblNewLabel;
+	private JLabel showhidepass;
+
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					Login frame = new Login();
-					frame.setVisible(true);
-					frame.setLocationRelativeTo(null);
-
-					try {
-						frame.getRootPane().setDefaultButton(btnLogin);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				Login frame = new Login();
+				frame.setVisible(true);
+				frame.setLocationRelativeTo(null);
 			}
 		});
 	}
@@ -66,135 +64,210 @@ public class Login extends JFrame {
 	 * 
 	 */
 	public Login() {
-		setTitle("Đăng nhập");
+		setResizable(false);
+		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\logoApp.png"));
+		setTitle("Login");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 722, 439);
+		setBounds(100, 100, 842, 566);
 		contentPane = new JPanel();
-		contentPane.setBackground(SystemColor.controlHighlight);
-		contentPane.setBorder(null);
+		contentPane.setBackground(new Color(204, 204, 255));
 
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		contentPane.setLayout(null);
 
-		JLabel lblNewLabel = new JLabel("LOGIN TO SYSTEM");
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 27));
-		lblNewLabel.setBounds(191, 10, 287, 52);
-		contentPane.add(lblNewLabel);
+		JLabel showhidepass = new JLabel("");
+		showhidepass.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		showhidepass.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				showPass=!showPass;
+				if(showPass==false) {
+					txfPassword.setEchoChar('\u2022');
+					ImageIcon iconShow = new ImageIcon(
+							"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\showpass.png");
+					Image imageEye = iconShow.getImage();
+					Image scaledImgEye = imageEye.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+					ImageIcon scaledImg = new ImageIcon(scaledImgEye);
+					showhidepass.setIcon(scaledImg);
+				}else {
+					ImageIcon iconShow = new ImageIcon(
+							"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\hiddenpass.png");
+					Image imageEye = iconShow.getImage();
+					Image scaledImgEye = imageEye.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+					ImageIcon scaledImg = new ImageIcon(scaledImgEye);
+					showhidepass.setIcon(scaledImg);
+					txfPassword.setEchoChar((char) 0);
+				}
+			}
+		});
+		showhidepass.setBounds(761, 361, 32, 24);
+		contentPane.add(showhidepass);
 
+		JLabel backgroundTiltle = new JLabel("");
+		backgroundTiltle.setBounds(10, 0, 754, 132);
+
+		ImageIcon imageIcon = new ImageIcon(
+				"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\logo4-removebg-preview.png");
+		Image image = imageIcon.getImage();
+		Image scaledImage = image.getScaledInstance(700, 200, Image.SCALE_SMOOTH);
+		ImageIcon scaledImageIcon = new ImageIcon(scaledImage);
+		backgroundTiltle.setIcon(scaledImageIcon);
+		contentPane.add(backgroundTiltle);
+		
+		if(showPass==false) {
+			ImageIcon iconShow = new ImageIcon(
+					"C:\\Users\\Admin\\Desktop\\Code\\Java\\JavaSwing\\PharmaSwing\\src\\image\\showpass.png");
+			Image imageEye = iconShow.getImage();
+			Image scaledImgEye = imageEye.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+			ImageIcon scaledImg = new ImageIcon(scaledImgEye);
+			showhidepass.setIcon(scaledImg);
+		}
+
+
+		
 		txfUsername = new JTextField();
+		txfUsername.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		txfUsername.setDisabledTextColor(SystemColor.textText);
 		txfUsername.setSelectedTextColor(SystemColor.controlHighlight);
 		txfUsername.setSelectionColor(SystemColor.textText);
 		txfUsername.setForeground(SystemColor.textText);
-		txfUsername.setBackground(SystemColor.controlHighlight);
-		txfUsername.setFont(new Font("Tahoma", Font.PLAIN, 23));
-		txfUsername.setBorder(null);
-		txfUsername.setBounds(224, 160, 216, 30);
+		txfUsername.setBackground(new Color(204, 204, 255));
+		txfUsername.setFont(new Font("Tahoma", Font.PLAIN, 24));
+		txfUsername.setBorder(new EmptyBorder(0, 0, 3, 0));
+		txfUsername.setBounds(535, 263, 216, 30);
 		contentPane.add(txfUsername);
 		txfUsername.setColumns(10);
 
 		txfPassword = new JPasswordField();
+		txfPassword.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		txfPassword.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnLogin.doClick();
 			}
 		});
-		txfPassword.setFont(new Font("Tahoma", Font.PLAIN, 23));
+		txfPassword.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		txfPassword.setBorder(null);
-		txfPassword.setBackground(SystemColor.controlHighlight);
-		txfPassword.setBounds(224, 260, 216, 30);
+		txfPassword.setBackground(new Color(204, 204, 255));
+		txfPassword.setBounds(535, 350, 216, 30);
 		contentPane.add(txfPassword);
-		
-		lbl_user = new JLabel("test");
-		lbl_user.setFont(new Font("Tahoma", Font.PLAIN, 17));
-		lbl_user.setBounds(808, 702, 177, 26);
+		btnLogin.setHideActionText(true);
+		btnLogin.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btnLogin.setBorder(null);
+		btnLogin.setBackground(new Color(0, 204, 255));
 
-
-		
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+
 				String usernameString = txfUsername.getText();
 				String passString = new String(txfPassword.getPassword());
 
-				// conect db
-				try {
-					Class.forName("com.mysql.cj.jdbc.Driver");
-					Connection con = DriverManager
-							.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
-					java.sql.Statement stmStatement = con.createStatement();
-					String sqlString = "select * from account where username='" + usernameString + "' and password ='"
-							+ passString + "'";
-					ResultSet rsSet = stmStatement.executeQuery(sqlString);
-					
-					if (rsSet.next()) {
-						namestaff = rsSet.getString("namestaff");
-						 id = rsSet.getInt("idstaff");
-						 lbl_user.setText(String(id));
-						 System.out.println("Login: " +id);
-						//login success
+				if (checkLogin(usernameString, passString)) {
+					try {
+						HomePage homePage = new HomePage();
 						showDialog("Đăng nhập thành công, vui lòng chờ...", 2000);
-						setVisible(false);
-						new HomePage().setVisible(true);
-						
-						
-						
-					} else {
-						//login false
-						 JOptionPane.showMessageDialog(null, "Tài khoản hoặc mật khẩu không hợp lệ! Vui lòng nhập lại.");
+						homePage.setVisible(true);
+						btnLogin.removeActionListener(this);
+						dispose();
+
+					} catch (Exception e2) {
+						e2.printStackTrace();
 					}
-				} catch (Exception e1) {
-					// TODO: handlsyse exception
-					System.out.println(e1.getMessage());
+				} else {
+					JOptionPane.showMessageDialog(null, "Tài khoản hoặc mật khẩu không hợp lệ. Vui lòng nhập lại!!");
+					System.out.println("User" + usernameString);
+					return;
 				}
+				txfPassword.setText(null);
+				txfUsername.setText(null);
 			}
 
-			private String String(int id) {
-				// TODO Auto-generated method stub
-				return null;
-			}
 		});
 		btnLogin.setFont(new Font("Tahoma", Font.BOLD, 20));
-		btnLogin.setBounds(224, 329, 155, 33);
+		btnLogin.setBounds(483, 415, 197, 53);
 
 		contentPane.add(btnLogin);
 
 		JSeparator separator = new JSeparator();
-		separator.setBounds(224, 198, 216, 2);
+		separator.setBackground(new Color(204, 204, 255));
+		separator.setBounds(535, 296, 216, 2);
 		contentPane.add(separator);
 
 		JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(224, 300, 216, 2);
+		separator_1.setBackground(new Color(204, 204, 255));
+		separator_1.setBounds(535, 382, 216, 2);
 		contentPane.add(separator_1);
 
 		txtUsername = new JTextField();
-		txtUsername.setEnabled(false);
+		txtUsername.setFocusable(false);
+		txtUsername.setOpaque(false);
 		txtUsername.setEditable(false);
 		txtUsername.setSelectedTextColor(Color.LIGHT_GRAY);
-		txtUsername.setFont(new Font("Tahoma", Font.PLAIN, 23));
+		txtUsername.setFont(new Font("VNI-Palatin", Font.PLAIN, 25));
 		txtUsername.setText("Username:");
-		txtUsername.setBackground(SystemColor.controlHighlight);
+		txtUsername.setBackground(new Color(204, 204, 255));
 		txtUsername.setBorder(null);
-		txtUsername.setBounds(88, 160, 126, 30);
+		txtUsername.setBounds(393, 265, 132, 30);
 		contentPane.add(txtUsername);
 		txtUsername.setColumns(10);
 
 		txtPassword = new JTextField();
-		txtPassword.setEnabled(false);
+		txtPassword.setFocusable(false);
 		txtPassword.setEditable(false);
 		txtPassword.setText("Password:");
 		txtPassword.setSelectedTextColor(Color.LIGHT_GRAY);
-		txtPassword.setFont(new Font("Tahoma", Font.PLAIN, 23));
+		txtPassword.setFont(new Font("VNI-Palatin", Font.PLAIN, 25));
 		txtPassword.setColumns(10);
 		txtPassword.setBorder(null);
-		txtPassword.setBackground(SystemColor.controlHighlight);
-		txtPassword.setBounds(88, 262, 126, 30);
+		txtPassword.setBackground(new Color(204, 204, 255));
+		txtPassword.setBounds(393, 348, 132, 39);
 		contentPane.add(txtPassword);
 
+		JLabel lblNewLabel_1 = new JLabel("");
+		lblNewLabel_1.setBackground(new Color(204, 102, 255));
+		lblNewLabel_1.setFocusable(false);
+		lblNewLabel_1.setIcon(
+				new ImageIcon("C:\\Users\\Admin\\Downloads\\logo3-removebg-preview.png"));
+		lblNewLabel_1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		lblNewLabel_1.setBounds(0, 0, 830, 532);
+		contentPane.add(lblNewLabel_1);
+		
+		lblNewLabel = new JLabel("LOGIN HERE");
+		lblNewLabel.setFont(new Font("Bradley Hand ITC", Font.BOLD, 45));
+		lblNewLabel.setBounds(423, 164, 353, 61);
+		contentPane.add(lblNewLabel);
+		
+		
 	}
-	public JLabel getJLabel() {
-		return lbl_user ;
+
+	boolean checkLogin(String usernameString, String pasString) {
+
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			Connection con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/pharma_swing", "root", "123456");
+			java.sql.Statement stmStatement = con.createStatement();
+			String sqlString = "select * from account where username='" + usernameString + "' and password ='"
+					+ pasString + "'";
+			ResultSet rsSet = stmStatement.executeQuery(sqlString);
+
+			if (rsSet.next()) {
+				// Lấy thông tin của nhân viên đăng nhập
+				String positionUser = rsSet.getString("position");
+				String staffNameString = rsSet.getString("namestaff");
+				int idStaff = rsSet.getInt("id");
+				GetInfoUser getInfoUser = GetInfoUser.getInstance();
+				getInfoUser.setPosition(positionUser);
+				getInfoUser.setstaffname(staffNameString);
+				getInfoUser.setIdstaff(idStaff);
+				System.out.println("login sucess" + txfUsername.getText());
+				return true;
+			}
+		} catch (Exception e1) {
+			System.out.println(e1.getMessage());
+		}
+		return false;
 	}
-	
+
 	public static void showDialog(String message, int duration) {
 		JFrame frame = new JFrame();
 		JDialog dialog = new JDialog(frame, "Thông báo", true);
@@ -222,5 +295,4 @@ public class Login extends JFrame {
 		timer.start();
 		dialog.setVisible(true);
 	}
-
 }

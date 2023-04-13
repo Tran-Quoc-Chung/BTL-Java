@@ -27,6 +27,8 @@ CREATE TABLE `account` (
   `username` varchar(45) NOT NULL,
   `password` varchar(45) NOT NULL,
   `position` varchar(45) NOT NULL,
+  `namestaff` varchar(45) NOT NULL,
+  `idstaff` int NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -37,7 +39,7 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
-INSERT INTO `account` VALUES (1,'testlogin','123456','admin');
+INSERT INTO `account` VALUES (1,'testlogin','123456','Staff','Nguyễn A',1),(2,'Admin','123456','Admin','Admin',2);
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -82,8 +84,9 @@ CREATE TABLE `menu` (
   `amount` int NOT NULL,
   `price` int NOT NULL,
   `iddrugs` int NOT NULL,
+  `stt` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`idmenu`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=222 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -92,7 +95,6 @@ CREATE TABLE `menu` (
 
 LOCK TABLES `menu` WRITE;
 /*!40000 ALTER TABLE `menu` DISABLE KEYS */;
-INSERT INTO `menu` VALUES (30,'Ascriptin',1,92000,1073),(33,'Prednisone',1,14000,1039),(34,'Betamethasone',1,6000,1043),(35,'Canakinumab',5,10000,1045),(36,'Tocilizumab',5,100000,1047),(37,'Pioglitazone',1,8000,1116),(39,'Cefaclo 250mg',1,9000,1003),(40,'Ibuprofen',1,20000,1009);
 /*!40000 ALTER TABLE `menu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -148,12 +150,32 @@ INSERT INTO `pharmalv2` VALUES (1,'Kháng sinh Penicillin',1),(2,'Kháng sinh Ce
 UNLOCK TABLES;
 
 --
--- Dumping events for database 'pharma_swing'
+-- Table structure for table `voucher`
 --
 
+DROP TABLE IF EXISTS `voucher`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `voucher` (
+  `codevoucher` varchar(45) NOT NULL,
+  `idvoucher` int NOT NULL,
+  `startdate` date NOT NULL,
+  `enddate` date NOT NULL,
+  `discount` float NOT NULL,
+  PRIMARY KEY (`idvoucher`),
+  UNIQUE KEY `codevoucher_UNIQUE` (`codevoucher`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
--- Dumping routines for database 'pharma_swing'
+-- Dumping data for table `voucher`
 --
+
+LOCK TABLES `voucher` WRITE;
+/*!40000 ALTER TABLE `voucher` DISABLE KEYS */;
+INSERT INTO `voucher` VALUES ('abc123',1,'2022-01-01','2024-01-01',0.5),('abcd1',2,'2022-01-01','2023-01-02',0.3),('a1234',3,'2021-01-01','2021-03-03',0.5);
+/*!40000 ALTER TABLE `voucher` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -164,4 +186,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-03-20 17:08:52
+-- Dump completed on 2023-04-13 13:26:41

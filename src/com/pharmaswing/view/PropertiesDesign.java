@@ -16,6 +16,16 @@ public class PropertiesDesign {
 	private JLabel lblNewLabel_2;
 	private JTable table_menu;
 	private JTable table_drugList;
+    private double voucher;
+
+    
+	public double getVoucher() {
+		return voucher;
+	}
+
+	public void setVoucher(double voucher) {
+		this.voucher = voucher;
+	}
 	
 	public PropertiesDesign() {
 		lblNewLabel = new JLabel("Tổng:");
@@ -32,15 +42,15 @@ public class PropertiesDesign {
 		
 		lblTn = new JLabel("Tên:");
 		lblTn.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		lblTn.setBounds(35, 627, 51, 26);
+		lblTn.setBounds(120, 627, 51, 26);
 		
 		lblSLng = new JLabel("Số lượng:");
 		lblSLng.setFont(new Font("Tahoma", Font.PLAIN, 21));
-		lblSLng.setBounds(35, 671, 107, 26);
+		lblSLng.setBounds(120, 671, 107, 26);
 		
 		lblNewLabel_2 = new JLabel("=>");
 		lblNewLabel_2.setFont(new Font("Tahoma", Font.PLAIN, 20));
-		lblNewLabel_2.setBounds(215, 682, 35, 13);
+		lblNewLabel_2.setBounds(300, 682, 35, 13);
 		
 		table_menu = new JTable();
 		table_menu.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -54,13 +64,13 @@ public class PropertiesDesign {
 		
 		table_drugList = new JTable();
 		table_drugList.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		table_drugList.setSelectionForeground(Color.WHITE);
-		table_drugList.setSelectionBackground(new Color(192, 192, 192));
-		table_drugList.setRowHeight(30);
-		table_drugList.setGridColor(Color.LIGHT_GRAY);
-		table_drugList.setForeground(Color.BLACK);
-		table_drugList.setBackground(new Color(128, 255, 255));
-		table_drugList.setBounds(10, 146, 560, 427);
+		table_drugList.setBackground(SystemColor.menu);
+		table_drugList.setForeground(Color.black);
+		table_drugList.setSelectionBackground(SystemColor.activeCaptionBorder);
+		table_drugList.setGridColor(SystemColor.textInactiveText);
+		table_drugList.setSelectionForeground(Color.white);
+		table_drugList.setRowHeight(35);
+		table_drugList.setAutoCreateRowSorter(true);
 
 	}
 	
