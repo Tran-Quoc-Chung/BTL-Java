@@ -53,6 +53,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
+
+import com.mysql.cj.conf.BooleanPropertyDefinition;
+
 import java.awt.Component;
 
 public class HomePage extends JFrame {
@@ -593,6 +596,17 @@ public class HomePage extends JFrame {
 		toolBar.add(btn_toolbar_Support);
 		toolBar.add(Box.createVerticalStrut(30));
 		
+		btn_toolbar_LogOut.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				dispose();
+				Login login = new Login();
+				login.setVisible(true);
+			
+			}
+		})		;
 		JButton btn_useJToolBar = new JButton("<<<");
 		btn_useJToolBar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -701,7 +715,7 @@ public class HomePage extends JFrame {
 						if (rowsDeleted > 0) {
 
 							// Nếu có hàng bị xóa, hiển thị thông báo thành công
-							JOptionPane.showMessageDialog(null, "Hủy thành công!");
+							Login.showDialog("Xóa thành công",2000 );
 							btn_deleteDrugs.setEnabled(false);
 							// Refresh lại dữ liệu trong JTable
 							refreshMenu();
